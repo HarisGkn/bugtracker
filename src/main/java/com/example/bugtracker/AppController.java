@@ -1,6 +1,7 @@
 package com.example.bugtracker;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -16,6 +17,9 @@ public class AppController {
 
     @Autowired
     private TicketService service;
+
+    @Autowired
+    UserRepository userRepo;
 
 
     @RequestMapping("/")
@@ -53,6 +57,24 @@ public class AppController {
     @RequestMapping("/delete/{id}")
     public String deleteProduct(@PathVariable(name = "id") int id) {
         service.delete(id);
+        return "redirect:/";
+    }
+
+    @RequestMapping("/register")
+    public String showRegistrationForm(Model model) {
+        model.addAttribute("user", new User());
+
+        return "signup_form";
+    }
+
+    @RequestMapping(value = "/process_register", method = RequestMethod.POST)
+    public String processRegister(User user) {
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        String encodedPassword = passwordEncoder.encode(user.getPassword());
+        user.setPassword(encodedPassword);
+
+        userRepo.save(user);
+
         return "redirect:/";
     }
 
